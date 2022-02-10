@@ -22,32 +22,81 @@ def drawWhitesides():
 
 def ParallaxProcess():
     print("Clicked ParallaxProcess")
-    epicondylar = np.array(canvas.coords("epi")).reshape(2,2)
-    epicondylar[:,1] = 400 - epicondylar[:,1]
-    print(epicondylar)
-    if epicondylar[0,0]>epicondylar[1,0]:
-        epicondylar_med = epicondylar[1]
-        epicondylar_lat = epicondylar[0]
+    epi = np.array(canvas.coords("epi")).reshape(2,2)
+    epi[:,1] = 400 - epi[:,1]
+    epi[:,0] = - epi[:,0]    # Align x-axis with hip coordinate system
+
+    if epi[0,0]>epi[1,0]:
+        epi_med = epi[1]
+        epi_lat = epi[0]
     else:
-        epicondylar_med = epicondylar[0]
-        epicondylar_lat = epicondylar[1]
-    whitesides = np.array(canvas.coords("white")).reshape(2,2)
-    whitesides[:,1] = 400 - whitesides[:,1]
-    print(whitesides)
-    if whitesides[0,1]>whitesides[1,1]:
-        whitesides_ant = whitesides[0]
-        whitesides_post = whitesides[1]
+        epi_med = epi[0]
+        epi_lat = epi[1]
+    white = np.array(canvas.coords("white")).reshape(2,2)
+    white[:,1] = 400 - white[:,1]
+    white[:,0] = - white[:,0]    # Align x-axis with hip coordinate system
+    if white[0,1]>white[1,1]:
+        white_ant = white[0]
+        white_post = white[1]
     else:
-        whitesides_ant = whitesides[1]
-        whitesides_post = whitesides[0]
+        white_ant = white[1]
+        white_post = white[0]
+
+    epi_vec = epi_lat - epi_med   # So that epicondylar vector aligns with coordinate system
+    epi_vec = np.pad(epi_vec, (0,1))
+    white_vec = white_ant - white_post
+    white_vec = np.pad(white_vec, (0,1))
+    theta_user = np.abs(np.arccos(np.dot(epi_vec, white_vec)/(np.linalg.norm(epi_vec)*np.linalg.norm(white_vec)))*(180/np.pi))
+
+
     viewrotations = np.array(name[current_image_num][:-4].split('_'))
     viewrotations = [ int(x) for x in viewrotations ]
-    print(viewrotations)
+    print("Viewer Rotations:", viewrotations)
+    print("User Input angle:",theta_user)
+
+    whitesides_ant = np.array([-0.4435, 45.8136, -0.0914])/10
+    whitesides_post = np.array([3.6296, -14.9831, 0.7476])/10
+    whitesides = whitesides_ant - whitesides_post
+
+    epicondylar_med = np.array([44.4236, -0.0000, 9.1508])/10
+    epicondylar_lat = np.array([-44.4236, 0.0000, -9.1508])/10
+    epicondylar = epicondylar_med - epicondylar_lat
+
+    theta_og = np.abs(np.arccos(np.dot(epicondylar, whitesides)/(np.linalg.norm(epicondylar)*np.linalg.norm(whitesides)))*(180/np.pi))
+    #print("Original True angle:", theta_og)
+
+    # Set camera and viewing positions
+    camera_d = 200/10
+    camera = np.array([0,0,camera_d])
+    Rview = viewing_plane_transform(viewrotations)
+    view_pos = np.matmul(Rview, camera)
+
+    # Project true bone references into viewing plane
+    normal = np.zeros(3) - view_pos
+    normal_unit = normal/np.linalg.norm(normal)  # unit normal vector
+
+    # Find projected vectors of epicondylar axis and Whitesides onto viewing plane
+    proj_epicondylar = np.cross(normal_unit, np.cross(epicondylar, normal_unit))
+    proj_whiteside = np.cross(normal_unit, np.cross(whitesides, normal_unit))
+    # Make projection flat in viewing plane
+    #proj_epicondylar[2] = 0
+    #proj_whiteside[2] = 0
+
+    # Calculate angle between projected vectors
+    theta_proj = np.abs(np.arccos(np.dot(proj_epicondylar, proj_whiteside)/(np.linalg.norm(proj_epicondylar)*np.linalg.norm(proj_whiteside)))*(180/np.pi))
+    print("True Projected angle:", theta_proj)
+    print("User deviation:", np.abs(theta_proj - theta_user))
+
+    theta_epicondylar = np.abs(np.arccos(np.dot(proj_epicondylar, epi_vec)/(np.linalg.norm(proj_epicondylar)*np.linalg.norm(epi_vec)))*(180/np.pi))
+    theta_whitesides = np.abs(np.arccos(np.dot(proj_whiteside, white_vec)/(np.linalg.norm(proj_whiteside)*np.linalg.norm(white_vec)))*(180/np.pi))
+
+    print("Epicondylar deviation:", theta_epicondylar)
+    print("Whitesides deviation:", theta_whitesides)
     canvas.itemconfig(image_cont, image=chooseImage())
     return
 
 window = tk.Tk()
-label = tk.Label(window, text = 'Hello world')
+label = tk.Label(window, text = 'Do not resize window')
 label.pack()
 
 
@@ -62,7 +111,7 @@ def chooseImage():
     # return to first image
     if current_image_num == len(images):
         current_image_num = 0
-    print(name[current_image_num])
+    #print(name[current_image_num])
     image_cont = canvas.create_image(0, 0, anchor=tk.NW, image=images[current_image_num])
     return
 
@@ -89,6 +138,25 @@ def drag(e):
     # Change the coordinates of the last created line to the new coordinates
     canvas.coords(lines[-1], coords["x"],coords["y"],coords["x2"],coords["y2"])
 
+def viewing_plane_transform(angle_val):
+  flexion = angle_val[0]*np.pi/180
+  var_val = (angle_val[1]*np.pi/180) + np.pi
+  int_ext = (angle_val[2]*np.pi/180) + np.pi/2
+
+  Rx = np.array([[1, 0, 0],
+                [0, np.cos(flexion), -np.sin(flexion)],
+                [0, np.sin(flexion), np.cos(flexion)]])
+  Ry = np.array([[np.cos(var_val), 0, np.sin(var_val)],
+                [0, 1, 0],
+                [-np.sin(var_val), 0, np.cos(var_val)]])
+  Rz = np.array([[np.cos(int_ext), -np.sin(int_ext), 0],
+                [np.sin(int_ext), np.cos(int_ext), 0],
+                [0, 0, 1]])
+  R = Rx.dot(Ry).dot(Rz)
+  return R
+
+
+
 coords = {"x":0,"y":0,"x2":0,"y2":0}
 # keep a reference to all lines by keeping them in a list
 lines = []
@@ -108,8 +176,7 @@ for i in range(0, test_num):
     name += [chosen]
 
 # Set first initial image
-current_image_num = 0
-print(name[current_image_num])
+current_image_num = 0 
 image_cont = canvas.create_image(0, 0, anchor=tk.NW, image=images[current_image_num])
 
 
