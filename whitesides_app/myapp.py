@@ -3,6 +3,29 @@ import os
 import random
 import numpy as np
 from PIL import Image, ImageTk
+import sqlite3
+
+# Create a database or connect to bone
+conn = sqlite3.connect('parallax_data.db')
+
+# Create cursor (way to make changes to database)
+cursor = conn.cursor()
+
+# create table if not already exists
+cursor.execute("""CREATE TABLE IF NOT EXISTS parallax_data (
+            name text,
+            view_rotation_flex real,
+            view_rotation_varvalg real,
+            view_rotation_intext real,
+            user_angle real,
+            true_proj_angle real,
+            user_deviation real,
+            epi_deviation real,
+            white_deviation real
+            )""")
+
+conn.commit()   # commit changes
+conn.close()    # close connection
 
 def drawEpicondylar():
     global item
@@ -91,13 +114,50 @@ def ParallaxProcess():
     theta_whitesides = np.abs(np.arccos(np.dot(proj_whiteside, white_vec)/(np.linalg.norm(proj_whiteside)*np.linalg.norm(white_vec)))*(180/np.pi))
 
     print("Epicondylar deviation:", theta_epicondylar)
-    print("Whitesides deviation:", theta_whitesides)
+    print("Whitesides deviation:", theta_epicondylar)
     canvas.itemconfig(image_cont, image=chooseImage())
+
+    # Create a database or connect to bone
+    conn = sqlite3.connect('parallax_data.db')
+    # Create cursor (way to make changes to database)
+    cursor = conn.cursor()
+    # send data to db
+    cursor.execute("""INSERT INTO parallax_data VALUES (
+                        :name,
+                        :view_rotation_flex,
+                        :view_rotation_varvalg,
+                        :view_rotation_intext,
+                        :user_angle,
+                        :true_proj_angle,
+                        :user_deviation,
+                        :epi_deviation,
+                        :white_deviation
+                        )""",
+                    {
+                        'name': name_entry.get(),
+                        'view_rotation_flex': viewrotations[0],
+                        'view_rotation_varvalg': viewrotations[1],
+                        'view_rotation_intext': viewrotations[2],
+                        'user_angle': theta_user,
+                        'true_proj_angle': theta_proj,
+                        'user_deviation': np.abs(theta_proj - theta_user),
+                        'epi_deviation': theta_epicondylar,
+                        'white_deviation': theta_epicondylar
+                    }
+    )
+    conn.commit()
+    conn.close()
     return
 
 window = tk.Tk()
 label = tk.Label(window, text = 'Do not resize window')
 label.pack()
+
+# add name entry
+name_label = tk.Label(window, text="Name:")
+name_entry = tk.Entry(window)
+name_label.place(x=550,y=0)
+name_entry.place(x=600,y=0)
 
 
 render_folder=os.listdir("../renders")
@@ -176,7 +236,7 @@ for i in range(0, test_num):
     name += [chosen]
 
 # Set first initial image
-current_image_num = 0 
+current_image_num = 0
 image_cont = canvas.create_image(0, 0, anchor=tk.NW, image=images[current_image_num])
 
 
