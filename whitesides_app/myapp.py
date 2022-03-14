@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox, Toplevel
 import os
 import random
 import numpy as np
@@ -14,6 +15,7 @@ cursor = conn.cursor()
 # create table if not already exists
 cursor.execute("""CREATE TABLE IF NOT EXISTS parallax_data (
             name text,
+            category text,
             view_rotation_flex real,
             view_rotation_varvalg real,
             view_rotation_intext real,
@@ -21,7 +23,8 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS parallax_data (
             true_proj_angle real,
             user_deviation real,
             epi_deviation real,
-            white_deviation real
+            white_deviation real,
+            postcond_deviation real
             )""")
 
 conn.commit()   # commit changes
@@ -43,18 +46,40 @@ def drawWhitesides():
     canvas.bind("<B1-Motion>", drag)
     return
 
+def drawPosterior():
+    print("Clicked Draw Posterior Condylar")
+    global item
+    item = "postcond"
+    canvas.bind("<Button-1>", click)
+    canvas.bind("<B1-Motion>", drag)
+    return
+
+# Coordinates of references in drawing plane
+whitesides_ant = np.array([-0.4435, 45.8136, -0.0914])/10
+whitesides_post = np.array([3.6296, -14.9831, 0.7476])/10
+whitesides = whitesides_ant - whitesides_post
+
+epicondylar_med = np.array([44.4236, -0.0000, 9.1508])/10
+epicondylar_lat = np.array([-44.4236, 0.0000, -9.1508])/10
+epicondylar = epicondylar_med - epicondylar_lat
+
+posteriorcondylar_med = np.array([26.692, 23.254, 6.852])/10
+posteriorcondylar_lat = np.array([-28.787, 23.737, 4.3025])/10
+posteriorcondylar = posteriorcondylar_med - posteriorcondylar_lat
+theta_og = np.abs(np.arccos(np.dot(epicondylar, whitesides)/(np.linalg.norm(epicondylar)*np.linalg.norm(whitesides)))*(180/np.pi))
+#print("Original True angle:", theta_og)
+
 def ParallaxProcess():
-    print("Clicked ParallaxProcess")
     epi = np.array(canvas.coords("epi")).reshape(2,2)
     epi[:,1] = 400 - epi[:,1]
     epi[:,0] = - epi[:,0]    # Align x-axis with hip coordinate system
-
     if epi[0,0]>epi[1,0]:
         epi_med = epi[1]
         epi_lat = epi[0]
     else:
         epi_med = epi[0]
         epi_lat = epi[1]
+
     white = np.array(canvas.coords("white")).reshape(2,2)
     white[:,1] = 400 - white[:,1]
     white[:,0] = - white[:,0]    # Align x-axis with hip coordinate system
@@ -65,31 +90,34 @@ def ParallaxProcess():
         white_ant = white[1]
         white_post = white[0]
 
+    postcond = np.array(canvas.coords("postcond")).reshape(2,2)
+    postcond[:,1] = 400 - postcond[:,1]
+    postcond[:,0] = - postcond[:,0]    # Align x-axis with hip coordinate system
+    if postcond[0,0]>postcond[1,0]:
+        postcond_med = postcond[1]
+        postcond_lat = postcond[0]
+    else:
+        postcond_med = postcond[0]
+        postcond_lat = postcond[1]
+
     epi_vec = epi_lat - epi_med   # So that epicondylar vector aligns with coordinate system
     epi_vec = np.pad(epi_vec, (0,1))
     white_vec = white_ant - white_post
     white_vec = np.pad(white_vec, (0,1))
     theta_user = np.abs(np.arccos(np.dot(epi_vec, white_vec)/(np.linalg.norm(epi_vec)*np.linalg.norm(white_vec)))*(180/np.pi))
 
+    postcond_vec = postcond_lat - postcond_med
+    postcond_vec = np.pad(postcond_vec, (0,1))
 
     viewrotations = np.array(name[current_image_num][:-4].split('_'))
     viewrotations = [ int(x) for x in viewrotations ]
     print("Viewer Rotations:", viewrotations)
     print("User Input angle:",theta_user)
 
-    whitesides_ant = np.array([-0.4435, 45.8136, -0.0914])/10
-    whitesides_post = np.array([3.6296, -14.9831, 0.7476])/10
-    whitesides = whitesides_ant - whitesides_post
 
-    epicondylar_med = np.array([44.4236, -0.0000, 9.1508])/10
-    epicondylar_lat = np.array([-44.4236, 0.0000, -9.1508])/10
-    epicondylar = epicondylar_med - epicondylar_lat
-
-    theta_og = np.abs(np.arccos(np.dot(epicondylar, whitesides)/(np.linalg.norm(epicondylar)*np.linalg.norm(whitesides)))*(180/np.pi))
-    #print("Original True angle:", theta_og)
 
     # Set camera and viewing positions
-    camera_d = 200/10
+    camera_d = 300/10
     camera = np.array([0,0,camera_d])
     Rview = viewing_plane_transform(viewrotations)
     view_pos = np.matmul(Rview, camera)
@@ -101,21 +129,27 @@ def ParallaxProcess():
     # Find projected vectors of epicondylar axis and Whitesides onto viewing plane
     proj_epicondylar = np.cross(normal_unit, np.cross(epicondylar, normal_unit))
     proj_whiteside = np.cross(normal_unit, np.cross(whitesides, normal_unit))
+    proj_postcond = np.cross(normal_unit, np.cross(posteriorcondylar, normal_unit))
     # Make projection flat in viewing plane
-    #proj_epicondylar[2] = 0
-    #proj_whiteside[2] = 0
+    proj_epicondylar[2] = 0
+    proj_whiteside[2] = 0
+    proj_postcond[2] = 0
 
     # Calculate angle between projected vectors
     theta_proj = np.abs(np.arccos(np.dot(proj_epicondylar, proj_whiteside)/(np.linalg.norm(proj_epicondylar)*np.linalg.norm(proj_whiteside)))*(180/np.pi))
     print("True Projected angle:", theta_proj)
     print("User deviation:", np.abs(theta_proj - theta_user))
 
-    theta_epicondylar = np.abs(np.arccos(np.dot(proj_epicondylar, epi_vec)/(np.linalg.norm(proj_epicondylar)*np.linalg.norm(epi_vec)))*(180/np.pi))
-    theta_whitesides = np.abs(np.arccos(np.dot(proj_whiteside, white_vec)/(np.linalg.norm(proj_whiteside)*np.linalg.norm(white_vec)))*(180/np.pi))
-
+    theta_epicondylar = np.arccos(np.dot(proj_epicondylar, epi_vec)/(np.linalg.norm(proj_epicondylar)*np.linalg.norm(epi_vec)))*(180/np.pi)
+    theta_whitesides = np.arccos(np.dot(proj_whiteside, white_vec)/(np.linalg.norm(proj_whiteside)*np.linalg.norm(white_vec)))*(180/np.pi)
+    theta_postcond = np.arccos(np.dot(proj_postcond, postcond_vec)/(np.linalg.norm(proj_postcond)*np.linalg.norm(postcond_vec)))*(180/np.pi)
+    #print(proj_postcond)
+    #print(postcond_vec)
+    #print(np.arctan(proj_postcond[1]/proj_postcond[0])*(180/np.pi))
+    #print(np.arctan(postcond_vec[1]/postcond_vec[0])*(180/np.pi))
     print("Epicondylar deviation:", theta_epicondylar)
-    print("Whitesides deviation:", theta_epicondylar)
-    canvas.itemconfig(image_cont, image=chooseImage())
+    print("Whitesides deviation:", theta_whitesides)
+    print("Posterior Condylar deviation:", theta_postcond)
 
     # Create a database or connect to bone
     conn = sqlite3.connect('parallax_data.db')
@@ -124,6 +158,7 @@ def ParallaxProcess():
     # send data to db
     cursor.execute("""INSERT INTO parallax_data VALUES (
                         :name,
+                        :category,
                         :view_rotation_flex,
                         :view_rotation_varvalg,
                         :view_rotation_intext,
@@ -131,10 +166,12 @@ def ParallaxProcess():
                         :true_proj_angle,
                         :user_deviation,
                         :epi_deviation,
-                        :white_deviation
+                        :white_deviation,
+                        :postcond_deviation
                         )""",
                     {
-                        'name': name_entry.get(),
+                        'name': name_str,
+                        'category': category[current_image_num],
                         'view_rotation_flex': viewrotations[0],
                         'view_rotation_varvalg': viewrotations[1],
                         'view_rotation_intext': viewrotations[2],
@@ -142,42 +179,71 @@ def ParallaxProcess():
                         'true_proj_angle': theta_proj,
                         'user_deviation': np.abs(theta_proj - theta_user),
                         'epi_deviation': theta_epicondylar,
-                        'white_deviation': theta_epicondylar
+                        'white_deviation': theta_whitesides,
+                        'postcond_deviation': theta_postcond
                     }
     )
     conn.commit()
     conn.close()
+
+    # Update image
+    canvas.itemconfig(image_cont, image=chooseImage())
     return
 
 window = tk.Tk()
 label = tk.Label(window, text = 'Do not resize window')
 label.pack()
 
-# add name entry
-name_label = tk.Label(window, text="Name:")
-name_entry = tk.Entry(window)
-name_label.place(x=550,y=0)
-name_entry.place(x=600,y=0)
+# add name entry popup
+name_popup = Toplevel(window)
+name_popup.wm_title("Before you start")
+popup_label = tk.Label(name_popup, text = 'Enter your name:')
+popup_label.pack()
+name_popup.geometry("250x150")
+name_entry = tk.Entry(name_popup, width= 25)
+name_entry.pack()
+popup_button= tk.Button(name_popup, text="Ok", command=lambda:popup_button_click(name_popup, name_entry))
+popup_button.pack(pady=5)
 
+# function to carry out after name has been entered
+def popup_button_click(name_popup, name_entry):
+    global name_str
+    name_str = name_entry.get();
+    name_popup.destroy()
 
-render_folder=os.listdir("../renders")
 
 def chooseImage():
     global current_image_num
-
+    global current_iter_num
+    global iter_num
+    global name
+    global category
+    global index
     # next image
     current_image_num += 1
 
     # return to first image
-    if current_image_num == len(images):
-        current_image_num = 0
-    #print(name[current_image_num])
-    image_cont = canvas.create_image(0, 0, anchor=tk.NW, image=images[current_image_num])
+    if current_image_num == test_num*2:
+        current_iter_num = current_iter_num + 1
+        if current_iter_num == iter_num:
+            FinishSequence()
+        else:
+            print(name, category,index)
+            temp = list(zip(name, category, index))
+            random.shuffle(temp)
+            namenew, categorynew, indexnew  = zip(*temp)
+            # reassign shuffled imageset
+            name = np.array(namenew)
+            category = np.array(categorynew)
+            index = np.array(indexnew)
+            current_image_num = 0
+    image_cont = canvas.create_image(0, 0, anchor=tk.NW, image=images[index[current_image_num]])
+
     return
 
-def collectImages(file):
-    img = Image.open("../renders/"+file)
-    img = ImageTk.PhotoImage(img.resize((800, 400)))
+def collectImages(file, folder):
+    img = Image.open(folder+"/"+file)
+    img = ImageTk.PhotoImage(img.resize((1000, 550)))
     return img
 
 def click(e):
@@ -186,6 +252,8 @@ def click(e):
         c = "green"
     elif item == "white":
         c = "red"
+    elif item == "postcond":
+        c = "blue"
     coords["x"] = e.x
     coords["y"] = e.y
 
@@ -215,6 +283,11 @@ def viewing_plane_transform(angle_val):
   R = Rx.dot(Ry).dot(Rz)
   return R
 
+# end program after all iterations have been completed
+def FinishSequence():
+    tk.messagebox.showinfo("You're done",  "Experiment complete! Click to end!")
+    #window.quit()
+    window.destroy()
 
 
 coords = {"x":0,"y":0,"x2":0,"y2":0}
@@ -225,28 +298,36 @@ canvas = tk.Canvas(window)
 canvas.pack(expand = 1, fill=tk.BOTH) # Stretch canvas to root window size.
 
 
+render_folder = ["../renders_TKA", "../renders_PKA"]
 
 # Pre-load images to use
-test_num = 5
+iter_num = 1
+current_iter_num = 0
+test_num = 1
 images = []
 name = []
-for i in range(0, test_num):
-    chosen = random.choice(render_folder)
-    images += [collectImages(chosen)]
-    name += [chosen]
-
+category = []
+index = np.arange(0,test_num*2,1)
+for folder in render_folder:
+    for i in range(0, test_num):
+        chosen = random.choice(os.listdir(folder))
+        images += [collectImages(chosen, folder)]
+        name += [chosen]
+        category += [folder[-3:]]
 # Set first initial image
 current_image_num = 0
-image_cont = canvas.create_image(0, 0, anchor=tk.NW, image=images[current_image_num])
+image_cont = canvas.create_image(0, 0, anchor=tk.NW, image=images[index[current_image_num]])
 
 
 B1 = tk.Button(window, text ="Draw Epicondylar axis", command=drawEpicondylar)
-B1.place(x=50,y=450)
+B1.place(x=50,y=650)
 B2 = tk.Button(window, text ="Draw Whitesides", command=drawWhitesides)
-B2.place(x=300,y=450)
-B3 = tk.Button(window, text ="Go!", fg="green", command = ParallaxProcess)
-B3.place(x=600,y=450)
+B2.place(x=300,y=650)
+B3 = tk.Button(window, text ="Draw Posterior Condylar", command=drawPosterior)
+B3.place(x=500,y=650)
+B4 = tk.Button(window, text ="Go!", fg="green", command = ParallaxProcess)
+B4.place(x=900,y=650)
 
 window.title('My App')
-window.geometry('800x500')
+window.geometry('1000x700')
 window.mainloop()
