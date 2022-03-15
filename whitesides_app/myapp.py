@@ -196,6 +196,10 @@ label.pack()
 
 # add name entry popup
 name_popup = Toplevel(window)
+name_popup.attributes('-topmost', 'true')
+x = window.winfo_x()
+y = window.winfo_y()
+name_popup.geometry("+%d+%d" % (x + 400, y + 200))
 name_popup.wm_title("Before you start")
 popup_label = tk.Label(name_popup, text = 'Enter your name:')
 popup_label.pack()
@@ -208,6 +212,7 @@ popup_button.pack(pady=5)
 # function to carry out after name has been entered
 def popup_button_click(name_popup, name_entry):
     global name_str
+    window.attributes('-topmost', 'true')
     name_str = name_entry.get();
     name_popup.destroy()
 
@@ -298,12 +303,12 @@ canvas = tk.Canvas(window)
 canvas.pack(expand = 1, fill=tk.BOTH) # Stretch canvas to root window size.
 
 
-render_folder = ["../renders_TKA", "../renders_PKA"]
+render_folder = ["./renders_TKA", "./renders_PKA"]
 
 # Pre-load images to use
-iter_num = 1
+iter_num = 3
 current_iter_num = 0
-test_num = 1
+test_num = 5
 images = []
 name = []
 category = []
