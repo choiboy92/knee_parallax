@@ -35,6 +35,6 @@ def select_all_rows(conn):
 
 # Get the current working directory
 cwd = os.getcwd()
-database = cwd + '/whitesides_app/parallax_data.db'
+database = cwd + '/whitesides_app/data/parallax_data_Oli.db'
 conn = create_connection(database)
 select_all_rows(conn)
