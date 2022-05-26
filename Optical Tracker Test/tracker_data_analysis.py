@@ -104,8 +104,8 @@ probe_proxy_007 = vec_in_new_coord_system(probe_rel_vec_007, proxy_basis)
 
 ### ------------------- RELATE PROXY TO HIP COORD SYSTEM --------------------
 hip2proxy = np.array([[-54.61, 24.79, -433.9]]) # n.b. in proxy system coords
-y_rot = -np.arctan(54.66/433.72)
-x_rot = -np.arctan(13.88/433.72)
+y_rot = -np.arctan(54.66/433.72)    # clockwise rotation about y axis
+x_rot = -np.arctan(13.88/433.72)    # clockwise rotation about x axis
 trans_angle = np.array([x_rot, y_rot, 0])
 
 def coordTransform(angle_val):
@@ -168,4 +168,19 @@ def quaternion2euler(ds):
         Rz=math.atan2((2*(q0*qz+qx*qy)),(1-2*(qy**2+qz**2)))*180/np.pi;
         RxRyRz += [Rx,Ry,Rz];
     return np.array(RxRyRz).reshape((-1,3))
-#print(quaternion2euler(pin1_006_quat))
+
+pin1_006_euler = quaternion2euler(pin1_006_quat)*np.pi/180
+# pin_axes = []
+# fig = pl.figure()
+# ax = pl.axes(projection='3d')
+# ax.quiver(0, 0, 0, pin_axes[0], pin_axes[1], pin_axes[2])
+# ax.set_xlim([-1, 0.5])
+# ax.set_ylim([-1, 1.5])
+# ax.set_zlim([-10, 8])
+# pl.show()
+# pin_axes = np.matmul(coordTransform(pin1_006_euler[0]), original_basis)
+# print(pin_axes)
+# pin_axes = vec_in_new_coord_system(pin_axes, proxy_basis)
+# print(pin_axes)
+# pin_axes = vec_in_new_coord_system(pin_axes, hip_basis)
+# print(pin_axes)
