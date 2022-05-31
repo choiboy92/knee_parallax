@@ -117,7 +117,7 @@ def ParallaxProcess():
 
 
     # Set camera and viewing positions
-    camera_d = 300/10
+    camera_d = 300  # in millimetres
     camera = np.array([0,0,camera_d])
     Rview = viewing_plane_transform(viewrotations)
     view_pos = np.matmul(Rview, camera)
@@ -175,12 +175,12 @@ def ParallaxProcess():
                         'view_rotation_flex': viewrotations[0],
                         'view_rotation_varvalg': viewrotations[1],
                         'view_rotation_intext': viewrotations[2],
-                        'user_angle': theta_user,
-                        'true_proj_angle': theta_proj,
-                        'user_deviation': np.abs(theta_proj - theta_user),
-                        'epi_deviation': theta_epicondylar,
-                        'white_deviation': theta_whitesides,
-                        'postcond_deviation': theta_postcond
+                        'user_angle': theta_user,                   # user input of angle between whitesides & epicondylar
+                        'true_proj_angle': theta_proj,              # real angle between true whitesides & epicondylar projection
+                        'user_deviation': np.abs(theta_proj - theta_user),  # error between user input & real whitesides-epicondylar angle
+                        'epi_deviation': theta_epicondylar,     # user drawn epicondylar angle error
+                        'white_deviation': theta_whitesides,    # user drawn whitesides angle error
+                        'postcond_deviation': theta_postcond    # user drawn posteriorcondylar angle error
                     }
     )
     conn.commit()
@@ -306,9 +306,9 @@ canvas.pack(expand = 1, fill=tk.BOTH) # Stretch canvas to root window size.
 render_folder = ["./renders_TKA", "./renders_PKA"]
 
 # Pre-load images to use
-iter_num = 3
+iter_num = 0
 current_iter_num = 0
-test_num = 5
+test_num = 1
 images = []
 name = []
 category = []
