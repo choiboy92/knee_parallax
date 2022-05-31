@@ -173,7 +173,7 @@ def ParallaxProcess():
                         :user_deviation,
                         :epi_deviation,
                         :white_deviation,
-                        :postcond_deviation
+                        :postcond_deviation,
                         :whitesides_ant,
                         :whitesides_post,
                         :epi_med,
