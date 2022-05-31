@@ -24,7 +24,13 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS parallax_data (
             user_deviation real,
             epi_deviation real,
             white_deviation real,
-            postcond_deviation real
+            postcond_deviation real,
+            whitesides_ant real,
+            whitesides_post real,
+            epi_med real,
+            epi_lat real,
+            postcond_med real,
+            postcond_lat real
             )""")
 
 conn.commit()   # commit changes
