@@ -168,6 +168,12 @@ def ParallaxProcess():
                         :epi_deviation,
                         :white_deviation,
                         :postcond_deviation
+                        :whitesides_ant,
+                        :whitesides_post,
+                        :epi_med,
+                        :epi_lat,
+                        :postcond_med,
+                        :postcond_lat
                         )""",
                     {
                         'name': name_str,
@@ -180,7 +186,15 @@ def ParallaxProcess():
                         'user_deviation': np.abs(theta_proj - theta_user),  # error between user input & real whitesides-epicondylar angle
                         'epi_deviation': theta_epicondylar,     # user drawn epicondylar angle error
                         'white_deviation': theta_whitesides,    # user drawn whitesides angle error
-                        'postcond_deviation': theta_postcond    # user drawn posteriorcondylar angle error
+                        'postcond_deviation': theta_postcond,    # user drawn posteriorcondylar angle error
+
+                        # Store coordinates of user input positions
+                        'whitesides_ant': white_ant,
+                        'whitesides_post': white_post,
+                        'epi_med': epi_med,
+                        'epi_lat': epi_lat,
+                        'postcond_med': postcond_med,
+                        'postcond_lat': postcond_lat
                     }
     )
     conn.commit()
@@ -306,9 +320,9 @@ canvas.pack(expand = 1, fill=tk.BOTH) # Stretch canvas to root window size.
 render_folder = ["./renders_TKA", "./renders_PKA"]
 
 # Pre-load images to use
-iter_num = 0
+iter_num = 1
 current_iter_num = 0
-test_num = 1
+test_num = 125
 images = []
 name = []
 category = []
