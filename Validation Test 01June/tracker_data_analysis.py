@@ -26,8 +26,8 @@ def parse_csv(rows_out, name, headslice):
 ### !-------------- USING PROBE DATA (6d.csv) ---------------------------------!
 #   again, ignore 005
 
-digprobe_filenames = ['FL001.csv','FM002.csv', 'FPL003.csv', 'FPM004.csv'];
-expprobe_filenames = ['Whitesides1_006.csv', '30MedTest007.csv'];
+digprobe_filenames = ['FDL005.csv','FDM006.csv', 'FPL007.csv', 'FPM008.csv'];
+expprobe_filenames = ['StraightOn009.csv', 'FlexUp010.csv', 'FlexDown011.csv', 'Lateral012.csv', 'Medial013.csv'];
 
 # EXTRACT DIGITISATION DATA
 headslice = 5;
@@ -48,19 +48,35 @@ dig_probe = np.array(dig_probe);    # dig_probe = [file, cols]
 #      dig_probe[0,1] = y pos for FL001 digitisation, etc.
 
 # EXTRACT EXPERIMENT DATA
-exp1_probe = parse_csv(810, expprobe_filenames[0], headslice)
-exp2_probe = parse_csv(516, expprobe_filenames[1], headslice)
-#print(exp2_probe)
+exp1_probe = parse_csv(1000, expprobe_filenames[0], headslice)
+exp2_probe = parse_csv(1000, expprobe_filenames[1], headslice)[:800]
+exp3_probe = parse_csv(500, expprobe_filenames[2], headslice)
+exp4_probe = parse_csv(500, expprobe_filenames[3], headslice)
+exp5_probe = parse_csv(500, expprobe_filenames[4], headslice)[:332]
+# need to slice some data to cut off unecessary readings
 
 # pin1 indicates the tracker pin we use (in this case for PEN)
 # therefore we use pin1 x, y, z values (n.b. these are relative to tracker)
 # so we need to convert to find relative to coordinate system from digitisation
-pin1_006 = exp1_probe[:, 12:15]
-pin1_006_quat = exp1_probe[:, 8:12]
-probe_006 = exp1_probe[:, 4:7]
-pin1_007 = exp2_probe[:, 12:15]
-pin1_007_quat = exp1_probe[:, 8:12]
-probe_007 = exp2_probe[:, 4:7]
+pin1_009 = exp1_probe[:, 12:15]
+pin1_009_quat = exp1_probe[:, 8:12]
+probe_009 = exp1_probe[:, 4:7]
+
+pin1_010 = exp2_probe[:, 12:15]
+pin1_010_quat = exp2_probe[:, 8:12]
+probe_010 = exp2_probe[:, 4:7]
+
+pin1_011 = exp3_probe[:, 12:15]
+pin1_011_quat = exp3_probe[:, 8:12]
+probe_011 = exp3_probe[:, 4:7]
+
+pin1_012 = exp4_probe[:, 12:15]
+pin1_012_quat = exp4_probe[:, 8:12]
+probe_012 = exp4_probe[:, 4:7]
+
+pin1_013 = exp5_probe[:, 12:15]
+pin1_013_quat = exp5_probe[:, 8:12]
+probe_013 = exp5_probe[:, 4:7]
 
 ### --------------------BUILD PROXY COORDINATE SYSTEM--------------------------
 vec1 = dig_probe[1] - dig_probe[0]; # EPICONDYLAR MED - LAT
@@ -79,11 +95,17 @@ y_vec = y_vec/np.linalg.norm(y_vec) # unit
 proxy_basis = np.array([x_vec, y_vec, z_vec])
 
 # find relative vector from proxy origin to pin1
-pin_rel_vec_006 = pin1_006 - origin;
-pin_rel_vec_007 = pin1_007 - origin;
+pin_rel_vec_009 = pin1_009 - origin;
+pin_rel_vec_010 = pin1_010 - origin;
+pin_rel_vec_011 = pin1_011 - origin;
+pin_rel_vec_012 = pin1_012 - origin;
+pin_rel_vec_013 = pin1_013 - origin;
 
-probe_rel_vec_006 = probe_006 - origin;
-probe_rel_vec_007 = probe_007 - origin;
+probe_rel_vec_009 = probe_009 - origin;
+probe_rel_vec_010 = probe_010 - origin;
+probe_rel_vec_011 = probe_011 - origin;
+probe_rel_vec_012 = probe_012 - origin;
+probe_rel_vec_013 = probe_013 - origin;
 
 
 # n.b. still in terms of tracker global coordinate system
@@ -96,10 +118,16 @@ def vec_in_new_coord_system(vec, basis):
     return np.array(vec_rel_proxy).reshape((-1, 3))
 
 
-pin_proxy_006 = vec_in_new_coord_system(pin_rel_vec_006, proxy_basis)
-pin_proxy_007 = vec_in_new_coord_system(pin_rel_vec_007, proxy_basis)
-probe_proxy_006 = vec_in_new_coord_system(probe_rel_vec_006, proxy_basis)
-probe_proxy_007 = vec_in_new_coord_system(probe_rel_vec_007, proxy_basis)
+pin_proxy_009 = vec_in_new_coord_system(pin_rel_vec_009, proxy_basis)
+pin_proxy_010 = vec_in_new_coord_system(pin_rel_vec_010, proxy_basis)
+pin_proxy_011 = vec_in_new_coord_system(pin_rel_vec_011, proxy_basis)
+pin_proxy_012 = vec_in_new_coord_system(pin_rel_vec_012, proxy_basis)
+pin_proxy_013 = vec_in_new_coord_system(pin_rel_vec_013, proxy_basis)
+probe_proxy_009 = vec_in_new_coord_system(probe_rel_vec_009, proxy_basis)
+probe_proxy_010 = vec_in_new_coord_system(probe_rel_vec_010, proxy_basis)
+probe_proxy_011 = vec_in_new_coord_system(probe_rel_vec_011, proxy_basis)
+probe_proxy_012 = vec_in_new_coord_system(probe_rel_vec_012, proxy_basis)
+probe_proxy_013 = vec_in_new_coord_system(probe_rel_vec_013, proxy_basis)
 
 
 ### ------------------- RELATE PROXY TO HIP COORD SYSTEM --------------------
@@ -140,20 +168,32 @@ hip_basis[2] = hip_basis[2]/np.linalg.norm(hip_basis[2])
 
 # FIRST: find vector from hip origin to tracker points in proxy coords
 # SECOND: convert tracker vector to hip coordinate system
-pin_hip_006 = vec_in_new_coord_system(pin_proxy_006 + hip2proxy, hip_basis)
-pin_hip_007 = vec_in_new_coord_system(pin_proxy_007 + hip2proxy, hip_basis)
-probe_hip_006 = vec_in_new_coord_system(probe_proxy_006 + hip2proxy, hip_basis)
-probe_hip_007 = vec_in_new_coord_system(probe_proxy_007 + hip2proxy, hip_basis)
+pin_hip_009 = vec_in_new_coord_system(pin_proxy_009 + hip2proxy, hip_basis)
+pin_hip_010 = vec_in_new_coord_system(pin_proxy_010 + hip2proxy, hip_basis)
+pin_hip_011 = vec_in_new_coord_system(pin_proxy_011 + hip2proxy, hip_basis)
+pin_hip_012 = vec_in_new_coord_system(pin_proxy_012 + hip2proxy, hip_basis)
+pin_hip_013 = vec_in_new_coord_system(pin_proxy_013 + hip2proxy, hip_basis)
+probe_hip_009 = vec_in_new_coord_system(probe_proxy_009 + hip2proxy, hip_basis)
+probe_hip_010 = vec_in_new_coord_system(probe_proxy_010 + hip2proxy, hip_basis)
+probe_hip_011 = vec_in_new_coord_system(probe_proxy_011 + hip2proxy, hip_basis)
+probe_hip_012 = vec_in_new_coord_system(probe_proxy_012 + hip2proxy, hip_basis)
+probe_hip_013 = vec_in_new_coord_system(probe_proxy_013 + hip2proxy, hip_basis)
 
 # PLOT DATA relative to hip origin
-# fig = pl.figure()
-# ax = pl.axes(projection='3d')
-# ax.scatter(pin_hip_006[:,0], pin_hip_006[:,1], pin_hip_006[:,2], label="Pin position 007", c='blue')
-# ax.scatter(pin_hip_007[:,0], pin_hip_007[:,1], pin_hip_007[:,2], label="Pin position 007", c='orange')
-# ax.scatter(probe_hip_006[:,0], probe_hip_006[:,1], probe_hip_006[:,2], label="Whitesides 006", c='purple')
-# ax.scatter(probe_hip_007[:,0], probe_hip_007[:,1], probe_hip_007[:,2], label="Whitesides 007", c='red')
-# ax.legend()
-# pl.show()
+fig = pl.figure()
+ax = pl.axes(projection='3d')
+ax.scatter(pin_hip_009[:,0], pin_hip_009[:,1], pin_hip_009[:,2], label="Pin position 009", c='blue')
+ax.scatter(pin_hip_010[:,0], pin_hip_010[:,1], pin_hip_010[:,2], label="Pin position 010", c='orange')
+ax.scatter(pin_hip_011[:,0], pin_hip_011[:,1], pin_hip_011[:,2], label="Pin position 011")
+ax.scatter(pin_hip_012[:,0], pin_hip_012[:,1], pin_hip_012[:,2], label="Pin position 012")
+ax.scatter(pin_hip_013[:,0], pin_hip_013[:,1], pin_hip_013[:,2], label="Pin position 013")
+ax.scatter(probe_hip_009[:,0], probe_hip_009[:,1], probe_hip_009[:,2], label="Whitesides 009", c='purple')
+ax.scatter(probe_hip_010[:,0], probe_hip_010[:,1], probe_hip_010[:,2], label="Whitesides 010", c='red')
+ax.scatter(probe_hip_011[:,0], probe_hip_011[:,1], probe_hip_011[:,2], label="Whitesides 011")
+ax.scatter(probe_hip_012[:,0], probe_hip_012[:,1], probe_hip_012[:,2], label="Whitesides 012")
+ax.scatter(probe_hip_013[:,0], probe_hip_013[:,1], probe_hip_013[:,2], label="Whitesides 013")
+ax.legend()
+pl.show()
 
 # CONVERT PIN ORIENTATION DATA FROM QUATERNIONS TO EULER ROTATIONS
 def quaternion2euler(ds):
@@ -169,7 +209,7 @@ def quaternion2euler(ds):
         RxRyRz += [Rx,Ry,Rz];
     return np.array(RxRyRz).reshape((-1,3))
 
-pin1_006_euler = quaternion2euler(pin1_006_quat)*np.pi/180
+# pin1_006_euler = quaternion2euler(pin1_006_quat)*np.pi/180
 # pin_axes = []
 # fig = pl.figure()
 # ax = pl.axes(projection='3d')
