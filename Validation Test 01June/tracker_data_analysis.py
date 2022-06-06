@@ -409,17 +409,21 @@ def realViewOrient(vec):
 
 # N.B. use vector from distal femur centre to glasses (so swap directions)
 RVO_straight = realViewOrient(-hip2epimid_inhip + pin_hip_straight)
+RVO_flexup = realViewOrient(-hip2epimid_inhip + pin_hip_flexup)
+RVO_flexdown = realViewOrient(-hip2epimid_inhip + pin_hip_flexdown)
+RVO_medial = realViewOrient(-hip2epimid_inhip + pin_hip_medial)
+RVO_lateral = realViewOrient(-hip2epimid_inhip + pin_hip_lateral)
 print("Real Straight View orientation:", RVO_straight)
-print("Real FlexUp View orientation:", realViewOrient(-hip2epimid_inhip + pin_hip_flexup))
-print("Real FlexDown View orientation:", realViewOrient(-hip2epimid_inhip + pin_hip_flexdown))
-print("Real Lateral View orientation:", realViewOrient(-hip2epimid_inhip + pin_hip_lateral))
-print("Real Medial View orientation:", realViewOrient(-hip2epimid_inhip + pin_hip_medial))
+print("Real FlexUp View orientation:", RVO_flexup)
+print("Real FlexDown View orientation:", RVO_flexdown)
+print("Real Lateral View orientation:", RVO_medial)
+print("Real Medial View orientation:", RVO_lateral)
 print("\nRELATIVE TO STRAIGHT VIEW")
 print("Real Straight View orientation:", RVO_straight-RVO_straight)
-print("Real FlexUp View orientation:", realViewOrient(-hip2epimid_inhip + pin_hip_flexup)-RVO_straight)
-print("Real FlexDown View orientation:", realViewOrient(-hip2epimid_inhip + pin_hip_flexdown)-RVO_straight)
-print("Real Lateral View orientation:", realViewOrient(-hip2epimid_inhip + pin_hip_lateral)-RVO_straight)
-print("Real Medial View orientation:", realViewOrient(-hip2epimid_inhip + pin_hip_medial)-RVO_straight)
+print("Real FlexUp View orientation:", RVO_flexup-RVO_straight)
+print("Real FlexDown View orientation:", RVO_flexdown-RVO_straight)
+print("Real Lateral View orientation:", RVO_medial-RVO_straight)
+print("Real Medial View orientation:", RVO_lateral-RVO_straight)
 
 # fig = pl.figure()
 # ax = pl.axes(projection='3d')
@@ -484,39 +488,41 @@ markstyle = "x"
 alp = 0.7
 lw = 0.8
 size = 5
-pl.scatter(proj_exp_straight[:,0], proj_exp_straight[:,1], label="Straight on Projections", s=size, alpha=alp, marker=markstyle,linewidths=lw)    # straight on combined
+pl.scatter(proj_exp_straight[:,0], proj_exp_straight[:,1], label="Straight on Projections", s=size, alpha=alp, marker=markstyle,linewidths=lw, color="blue")    # straight on combined
 pl.plot(x_straight, m_straight*x_straight + c_straight, c="black")
 # pl.scatter(proj_exp_2[:,0], proj_exp_2[:,1])    # flexup #1
 # pl.scatter(proj_exp_7[:,0], proj_exp_7[:,1])    # flexup #2
-pl.scatter(proj_exp_flexup[:,0], proj_exp_flexup[:,1], label="Flex Up Projections",s=size, alpha=alp, marker=markstyle,linewidths=lw)
+pl.scatter(proj_exp_flexup[:,0], proj_exp_flexup[:,1], label="Flexion Projections",s=size, alpha=alp, marker=markstyle,linewidths=lw, color="green")
 pl.plot(x_flexup, m_flexup*x_flexup + c_flexup, c="black")
 # pl.scatter(proj_exp_3[:,0], proj_exp_3[:,1])    # flexdown #1
 # pl.scatter(proj_exp_8[:,0], proj_exp_8[:,1])    # flexdown #2
-pl.scatter(proj_exp_flexdown[:,0], proj_exp_flexdown[:,1], label="Flex Down Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw)
+pl.scatter(proj_exp_flexdown[:,0], proj_exp_flexdown[:,1], label="Extension Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw, color="orange")
 pl.plot(x_flexdown, m_flexdown*x_flexdown + c_flexdown, c="black")
-pl.scatter(proj_exp_lateral[:,0], proj_exp_lateral[:,1], label="Lateral Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw)    # lateral
+pl.scatter(proj_exp_lateral[:,0], proj_exp_lateral[:,1], label="Lateral Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw, color="red")    # lateral
 pl.plot(x_lateral, m_lateral*x_lateral + c_lateral, c="black")
 # pl.scatter(proj_exp_5[:,0], proj_exp_5[:,1])    # medial #1
 # pl.scatter(proj_exp_9[:,0], proj_exp_9[:,1])    # medial #2
-pl.scatter(proj_exp_medial[:,0], proj_exp_medial[:,1], label="Medial Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw)
+pl.scatter(proj_exp_medial[:,0], proj_exp_medial[:,1], label="Medial Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw, color="purple")
 pl.plot(x_medial, m_medial*x_medial + c_medial, c="black")
 pl.legend()
+pl.xlabel("x")
+pl.ylabel("y")
 pl.show()
 # pl.scatter(proj_exp_medial[:,0], proj_exp_medial[:,1])    # medial
 # pl.plot(x_medial, m_medial*x_medial + c_medial)
 # pl.show()
 
 # Angles of lines in viewing plane
-theta_straight =np.arctan(m_straight)*180/np.pi
+theta_straight = np.arctan(m_straight)*180/np.pi
 theta_flexup = np.arctan(m_flexup)*180/np.pi
 theta_flexdown = np.arctan(m_flexdown)*180/np.pi
 theta_lateral = np.arctan(m_lateral)*180/np.pi
 theta_medial = np.arctan(m_medial)*180/np.pi
 
 # Angle between lines compared to the straight on line
-theta_flexup_rel = np.arctan((m_straight - m_flexup)/(1+ (m_straight + m_flexup)))*180/np.pi
-theta_flexdown_rel = np.arctan((m_straight - m_flexdown)/(1+ (m_straight + m_flexdown)))*180/np.pi
-theta_lateral_rel = np.arctan((m_straight - m_lateral)/(1+ (m_straight + m_lateral)))*180/np.pi
-theta_medial_rel = np.arctan((m_straight - m_medial)/(1+ (m_straight + m_medial)))*180/np.pi
-print("\nLine Angles:", np.array([theta_straight, theta_flexup, theta_flexdown, theta_lateral, theta_medial]))
+theta_flexup_rel = theta_flexup-theta_straight
+theta_flexdown_rel = theta_flexdown-theta_straight
+theta_lateral_rel = theta_lateral-theta_straight
+theta_medial_rel = 180-theta_medial-np.abs(theta_straight)  # as theta_medial angle is relative to +ve x-axis
+#print("\nLine Angles:", np.array([theta_straight, theta_flexup, theta_flexdown, theta_lateral, theta_medial]))
 print("Line Relative Angles (to straight):", np.array([theta_flexup_rel, theta_flexdown_rel, theta_lateral_rel, theta_medial_rel]))
