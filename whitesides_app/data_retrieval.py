@@ -57,5 +57,4 @@ for dbfile in os.listdir(directory):
         database =  directory + filename
         conn = create_connection(database)
         select_all_rows(conn, db_allattempt)
-
 db_allattempt = np.array(db_allattempt)
