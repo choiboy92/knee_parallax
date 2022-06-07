@@ -83,9 +83,22 @@ for n in range(0, len(data_num)):
 
 # INTER OBSERVER RELIABILITY
 # Interclass Correlation Coefficient Calculation (ICC)
+# try group by view & repetition number (i.e. 3 repeats, 5views for each category)
+# should no from 1 to 30
+print(data_num[:,0:3])
+repeat_counter = np.zeros(len(subset))
+view_rep_group = []
+for n in range(0, len(data_num)):
+    if tester_label[n] != tester_label[n-1]:    # check if tester has changed
+        repeat_counter = np.zeros(len(subset))  # if so reset counter
+    for k in range(0, len(subset)): # check which view matches
+        if view_num[n]==k+1:
+            repeat_counter[k] = repeat_counter[k]+ 1
+            view_rep_group += [int((k*6) + repeat_counter[k])]
+print(view_rep_group)
 #create DataFrame
 for c in range(5,9):
-    d = {'view': view_num,
+    d = {'view': view_rep_group,
             'tester': tester_label,
             'deviation': data_num[:, 5].tolist()}
     columns=['view', 'tester', 'deviation']
@@ -127,7 +140,7 @@ pl.errorbar(view_key, IOV_views_mean[:,0], yerr=IOV_views_std[:,0], marker="x",c
 pl.errorbar(view_key, IOV_views_mean[:,1], yerr=IOV_views_std[:,1], marker="x",capsize=5,elinewidth=0.5,lw=2,color="green",label="Epicondylar axis")
 pl.errorbar(view_key, IOV_views_mean[:,2], yerr=IOV_views_std[:,2], marker="x",capsize=5,elinewidth=0.5,lw=2,color="red",label="Whiteside line")
 pl.errorbar(view_key, IOV_views_mean[:,3], yerr=IOV_views_std[:,3], marker="x",capsize=5,elinewidth=0.5,lw=2,color="blue",label="PCA")
-pl.legend()
+#pl.legend()
 pl.ylabel("Mean Deviation Angle (˚)")
 pl.show()
 
@@ -139,7 +152,7 @@ pl.bar(x_axis-0.1,IOV_views_std[:,1], width=0.2,color="green",label="Epicondylar
 pl.bar(x_axis+0.1,IOV_views_std[:,2], width=0.2,color="red",label="Whiteside line")
 pl.bar(x_axis+0.3,IOV_views_std[:,3], width=0.2,color="blue",label="PCA")
 pl.ylabel("Variability in Deviation Angle (˚)")
-pl.legend(bbox_to_anchor =(0.65, 1))
+#pl.legend(bbox_to_anchor =(0.65, 1))
 pl.show()
 
 
