@@ -322,13 +322,13 @@ canvas = tk.Canvas(window)
 canvas.pack(expand = 1, fill=tk.BOTH) # Stretch canvas to root window size.
 
 
-#render_folder = ["./renders_TKA", "./renders_PKA"]
-render_folder = ["./subject_subset_renders/renders_TKA", "./subject_subset_renders/renders_PKA"]
+render_folder = ["./renders_TKA", "./renders_PKA"]
+#render_folder = ["./subject_subset_renders/renders_TKA", "./subject_subset_renders/renders_PKA"]
 
 # Pre-load images to use
-iter_num = 3
+iter_num = 1
 current_iter_num = 0
-test_num = 5
+test_num = 125
 images = []
 name = []
 category = []

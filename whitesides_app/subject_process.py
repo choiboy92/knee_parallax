@@ -85,7 +85,6 @@ for n in range(0, len(data_num)):
 # Interclass Correlation Coefficient Calculation (ICC)
 # try group by view & repetition number (i.e. 3 repeats, 5views for each category)
 # should no from 1 to 30
-print(data_num[:,0:3])
 repeat_counter = np.zeros(len(subset))
 view_rep_group = []
 for n in range(0, len(data_num)):
@@ -95,7 +94,6 @@ for n in range(0, len(data_num)):
         if view_num[n]==k+1:
             repeat_counter[k] = repeat_counter[k]+ 1
             view_rep_group += [int((k*6) + repeat_counter[k])]
-print(view_rep_group)
 #create DataFrame
 for c in range(5,9):
     d = {'view': view_rep_group,
@@ -120,7 +118,6 @@ for c in range(5,9):
 # INTEROBSERVER VARIABILITY (IOV)
 # variability between users for different views
 view_num = np.array(view_num)
-print(subset)
 IOV_views_mean = []
 IOV_views_std = []
 for n in range(0,len(subset)):
