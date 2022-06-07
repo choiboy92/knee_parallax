@@ -37,7 +37,7 @@ def outlierCheck(mat, maxdev):
     return rem
 
 #print(data_full[:, :6])
-rem = outlierCheck(data_out,4)
+rem = outlierCheck(data_out,5)
 if rem.size != 0:
     data_num = np.delete(data_num, rem, 0)    # delete rows containing outliers
     data_out = np.delete(data_out, rem, 0)    # delete rows containing outliers
@@ -67,7 +67,7 @@ for n in range(0, len(data_num)):
         if np.array_equal(subset[k],data_num[n, 0:3]) == True:
             view_num += [k+1]
 # group by raters
-label_key = ['A', 'B', 'C', 'D']
+label_key = ['A', 'B', 'C', 'D', 'E','F']
 tester_label = []
 for n in range(0, len(data_num)):
     for k in range(0, len(raters)):
@@ -171,7 +171,7 @@ for p in range(0, len(label_key)):  # for each tester
     abs_diff = []
     indi_mean = []
     tester_mean = []
-    mk_type = ["o", "x", "d", "v"]
+    mk_type = ["o", "x", "d", "v", "+", "^"]
     for k in range(0,4):    # for each line deviation measured
 
         for n in range(0, len(subset)): # for each repeated view
