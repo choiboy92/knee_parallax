@@ -60,6 +60,27 @@ print("EpiDev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 6], data_num
 print("WhiteDev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 7], data_num[data_full[:,1]==categories[1],7])[0, 1])
 print("PCADev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 8], data_num[data_full[:,1]==categories[1],8])[0, 1])
 
+# bar plot of reference deviation trends
+bar_xlabels = ["Overall Mean", "Overall STD", "TKA Mean", "TKA STD", "PKA Mean", "PKA STD"]
+bar_labels = ["Whitesides-Epicondylar", "Epicondylar axis", "Whiteside line", "PCA"]
+c_labels = ["black", "green", "red", "blue"]
+
+bar_plot_data = np.vstack([np.mean(data_num[:, 5:], axis=0),
+                           np.std(data_num[:, 5:], axis=0),
+                           np.mean(data_num[data_full[:,1]==categories[0], 5:], axis=0),
+                           np.std(data_num[data_full[:,1]==categories[0], 5:], axis=0),
+                           np.mean(data_num[data_full[:,1]==categories[1], 5:], axis=0),
+                           np.std(data_num[data_full[:,1]==categories[1], 5:], axis=0)])
+
+x_axis = np.arange(len(bar_xlabels))
+pl.xticks(x_axis, bar_xlabels)
+for k in range(0, len(bar_labels)):
+        pl.bar(x_axis-0.3+(k*0.2),bar_plot_data[:,k], width=0.2,color=c_labels[k],label=bar_labels[k])
+pl.ylabel("Angle (˚)")
+#pl.legend(bbox_to_anchor =(0.65, 1))
+pl.show()
+
+
 # group by views
 view_num = []
 for n in range(0, len(data_num)):
