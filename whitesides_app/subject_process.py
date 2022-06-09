@@ -48,8 +48,8 @@ subset = np.unique(data_num[:,0:3], axis=0)
 categories = ['TKA', 'PKA']
 raters = np.unique(data_full[:,0], axis=0)
 
-print("\nOverall Mean Deviations:", np.mean(data_num[:, 5:], axis=0))
-print("Overall StandDev. of Deviations:", np.std(data_num[:, 5:], axis=0))
+print("\nMean Deviations:", np.mean(data_num[:, 5:], axis=0))
+print("StandDev. of Deviations:", np.std(data_num[:, 5:], axis=0))
 print("Mean TKA Deviations:", np.mean(data_num[data_full[:,1]==categories[0], 5:], axis=0))
 print("StandDev. of TKA Deviations:", np.std(data_num[data_full[:,1]==categories[0], 5:], axis=0))
 print("Mean PKA Deviations:", np.mean(data_num[data_full[:,1]==categories[1], 5:], axis=0))
@@ -60,8 +60,12 @@ print("EpiDev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 6], data_num
 print("WhiteDev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 7], data_num[data_full[:,1]==categories[1],7])[0, 1])
 print("PCADev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 8], data_num[data_full[:,1]==categories[1],8])[0, 1])
 
+print("\nOVERALL")
+print("Overall Mean:", np.mean(data_num[:, 5:]))
+print("Overall STD:", np.std(data_num[:, 5:]))
+
 # bar plot of reference deviation trends
-bar_xlabels = ["Overall Mean", "Overall STD", "TKA Mean", "TKA STD", "PKA Mean", "PKA STD"]
+bar_xlabels = ["Mean", "STD", "TKA Mean", "TKA STD", "PKA Mean", "PKA STD"]
 bar_labels = ["Whitesides-Epicondylar", "Epicondylar axis", "Whiteside line", "PCA"]
 c_labels = ["black", "green", "red", "blue"]
 
@@ -77,6 +81,7 @@ pl.xticks(x_axis, bar_xlabels)
 for k in range(0, len(bar_labels)):
         pl.bar(x_axis-0.3+(k*0.2),bar_plot_data[:,k], width=0.2,color=c_labels[k],label=bar_labels[k])
 pl.ylabel("Angle (˚)")
+pl.ylim((0, 7))
 #pl.legend(bbox_to_anchor =(0.65, 1))
 pl.show()
 
@@ -148,7 +153,6 @@ IOV_views_mean = np.array(IOV_views_mean)
 IOV_views_std = np.array(IOV_views_std)
 
 
-
 # INTRA OBSERVER VARIABILITY
 
 # I think this below is wrong -- simply a mean & std plot for each view
@@ -161,6 +165,12 @@ pl.errorbar(view_key, IOV_views_mean[:,3], yerr=IOV_views_std[:,3], marker="x",c
 #pl.legend()
 pl.ylabel("Mean Deviation Angle (˚)")
 pl.show()
+print("Mean & STD at view 1", np.mean(IOV_views_mean[0]), np.mean(IOV_views_std[0]))
+print("Mean & STD at view 2", np.mean(IOV_views_mean[1]), np.mean(IOV_views_std[1]))
+print("Mean & STD at view 3", np.mean(IOV_views_mean[2]), np.mean(IOV_views_std[2]))
+print("Mean & STD at view 4", np.mean(IOV_views_mean[3]), np.mean(IOV_views_std[3]))
+print("Mean & STD at view 5", np.mean(IOV_views_mean[4]), np.mean(IOV_views_std[4]))
+
 
 # bar plot of std trends
 x_axis = np.arange(len(view_key))
@@ -172,6 +182,17 @@ pl.bar(x_axis+0.3,IOV_views_std[:,3], width=0.2,color="blue",label="PCA")
 pl.ylabel("Variability in Deviation Angle (˚)")
 #pl.legend(bbox_to_anchor =(0.65, 1))
 pl.show()
+# bar plot of AVERAGE std over views
+x_axis = np.arange(1)
+pl.xticks(x_axis, ["STD Averaged over Views"])
+pl.bar(x_axis-0.3,np.mean(IOV_views_std[:,0]), width=0.2,color="black",label="Whitesides-Epicondylar")
+pl.bar(x_axis-0.1,np.mean(IOV_views_std[:,1]), width=0.2,color="green",label="Epicondylar axis")
+pl.bar(x_axis+0.1,np.mean(IOV_views_std[:,2]), width=0.2,color="red",label="Whiteside line")
+pl.bar(x_axis+0.3,np.mean(IOV_views_std[:,3]), width=0.2,color="blue",label="PCA")
+pl.ylabel("Variability in Deviation Angle (˚)")
+#pl.legend(bbox_to_anchor =(0.65, 1))
+pl.show()
+print("STD Averaged over views values", np.mean(IOV_views_std, axis=0))
 
 
 # variability in the repeated measurements made by same user
@@ -213,8 +234,11 @@ complete_indi_mean = np.hstack(complete_indi_mean)
 complete_abs_diff = np.hstack(complete_abs_diff)
 
 ovr_mean = np.mean(complete_abs_diff)
+ovr_std = np.std(complete_abs_diff)
 print("Mean Difference in Absolute Deviation", ovr_mean)
 pl.plot([0, complete_indi_mean.max()], [ovr_mean, ovr_mean],'--', color="red")
+pl.plot([0, complete_indi_mean.max()], [ovr_mean+1.96*ovr_std, ovr_mean+1.96*ovr_std],'--', color="blue")
+pl.plot([0, complete_indi_mean.max()], [ovr_mean-1.96*ovr_std, ovr_mean-1.96*ovr_std],'--', color="blue")
 pl.xlabel("Average Absolute Deviation (˚)")
 pl.ylabel("Difference in Absolute Deviation (˚)")
 pl.legend()

@@ -57,20 +57,20 @@ proj_whiteside_lateral = np.cross(tda.normal_lateral, np.cross(whitesides, tda.n
 proj_whiteside_medial = np.cross(tda.normal_medial, np.cross(whitesides, tda.normal_medial))
 
 # Projected True and Real Whitesides Line Plot
-pl.plot([0,proj_whiteside_straight[0,0]],[0, proj_whiteside_straight[0,1]], label="Straight", color="blue",linestyle = 'dashed')
-pl.plot([0,proj_whiteside_flexup[0,0]],[0, proj_whiteside_flexup[0,1]], label="Flexion", color="green",linestyle = 'dashed')
+pl.plot([0,proj_whiteside_straight[0,0]],[0, proj_whiteside_straight[0,1]], label="Straight", color="cyan",linestyle = 'dashed')
+pl.plot([0,proj_whiteside_flexup[0,0]],[0, proj_whiteside_flexup[0,1]], label="Flexion", color="magenta",linestyle = 'dashed')
 pl.plot([0,proj_whiteside_flexdown[0,0]],[0, proj_whiteside_flexdown[0,1]], label="Extension", color="orange",linestyle = 'dashed')
-pl.plot([0,proj_whiteside_lateral[0,0]],[0, proj_whiteside_lateral[0,1]], label="Lateral", color="red",linestyle = 'dashed')
+pl.plot([0,proj_whiteside_lateral[0,0]],[0, proj_whiteside_lateral[0,1]], label="Lateral", color="brown",linestyle = 'dashed')
 pl.plot([0,proj_whiteside_medial[0,0]],[0, proj_whiteside_medial[0,1]], label="Medial", color="purple",linestyle = 'dashed')
 x_max = proj_whiteside_medial[0,0]
-pl.plot([0,x_max],[0, tda.m_straight*x_max], label="Real Straight", color="blue")
-pl.plot([0,x_max],[0, tda.m_flexup*x_max], label="Real Flexion", color="green")
+pl.plot([0,x_max],[0, tda.m_straight*x_max], label="Real Straight", color="cyan")
+pl.plot([0,x_max],[0, tda.m_flexup*x_max], label="Real Flexion", color="magenta")
 pl.plot([0,x_max],[0, tda.m_flexdown*x_max], label="Real Extension", color="orange")
-pl.plot([0,x_max],[0, tda.m_lateral*x_max], label="Real Lateral", color="red")
+pl.plot([0,x_max],[0, tda.m_lateral*x_max], label="Real Lateral", color="brown")
 #pl.plot([0,x_max],[0, tda.m_medial*x_max], label="Real Medial", color="purple",linestyle = 'dashed')
 pl.xlabel("x")
 pl.ylabel("y")
-pl.legend(loc=0)
+#pl.legend(loc=0)
 pl.show()
 
 ref = proj_whiteside_straight[0,:2]

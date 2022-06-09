@@ -485,24 +485,24 @@ x_medial = np.arange(np.amin(proj_exp_medial[:,0]), np.amax(proj_exp_medial[:,0]
 # pl.scatter(proj_exp_1[:,0], proj_exp_1[:,1])    # straight on #1
 # pl.scatter(proj_exp_6[:,0], proj_exp_6[:,1])    # straight on #2
 markstyle = "x"
-alp = 0.7
+alp = 1
 lw = 0.8
 size = 5
-pl.scatter(proj_exp_straight[:,0], proj_exp_straight[:,1], label="Straight on Projections", s=size, alpha=alp, marker=markstyle,linewidths=lw, color="blue")    # straight on combined
+pl.plot(proj_exp_straight[:,0], proj_exp_straight[:,1], label="Straight on Projections", alpha=alp, color="cyan")    # straight on combined
 pl.plot(x_straight, m_straight*x_straight + c_straight, c="black")
 # pl.scatter(proj_exp_2[:,0], proj_exp_2[:,1])    # flexup #1
 # pl.scatter(proj_exp_7[:,0], proj_exp_7[:,1])    # flexup #2
-pl.scatter(proj_exp_flexup[:,0], proj_exp_flexup[:,1], label="Flexion Projections",s=size, alpha=alp, marker=markstyle,linewidths=lw, color="green")
+pl.plot(proj_exp_flexup[:,0], proj_exp_flexup[:,1], label="Flexion Projections", alpha=alp, color="magenta")
 pl.plot(x_flexup, m_flexup*x_flexup + c_flexup, c="black")
 # pl.scatter(proj_exp_3[:,0], proj_exp_3[:,1])    # flexdown #1
 # pl.scatter(proj_exp_8[:,0], proj_exp_8[:,1])    # flexdown #2
-pl.scatter(proj_exp_flexdown[:,0], proj_exp_flexdown[:,1], label="Extension Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw, color="orange")
+pl.plot(proj_exp_flexdown[:,0], proj_exp_flexdown[:,1], label="Extension Projections",alpha=alp, color="orange")
 pl.plot(x_flexdown, m_flexdown*x_flexdown + c_flexdown, c="black")
-pl.scatter(proj_exp_lateral[:,0], proj_exp_lateral[:,1], label="Lateral Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw, color="red")    # lateral
+pl.plot(proj_exp_lateral[:,0], proj_exp_lateral[:,1], label="Lateral Projections",alpha=alp, color="brown")    # lateral
 pl.plot(x_lateral, m_lateral*x_lateral + c_lateral, c="black")
 # pl.scatter(proj_exp_5[:,0], proj_exp_5[:,1])    # medial #1
 # pl.scatter(proj_exp_9[:,0], proj_exp_9[:,1])    # medial #2
-pl.scatter(proj_exp_medial[:,0], proj_exp_medial[:,1], label="Medial Projections", s=size,alpha=alp, marker=markstyle,linewidths=lw, color="purple")
+pl.plot(proj_exp_medial[:,0], proj_exp_medial[:,1], label="Medial Projections",alpha=alp, color="purple")
 pl.plot(x_medial, m_medial*x_medial + c_medial, c="black")
 pl.legend()
 pl.xlabel("x")

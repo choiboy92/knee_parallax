@@ -33,8 +33,8 @@ subset = np.unique(data_num[:,0:3], axis=0)
 categories = ['TKA', 'PKA']
 raters = np.unique(data_full[:,0], axis=0)
 
-print("\nOverall Mean Deviations:", np.mean(data_num[:, 5:], axis=0))
-print("Overall StandDev. of Deviations:", np.std(data_num[:, 5:], axis=0))
+print("\nMean Deviations:", np.mean(data_num[:, 5:], axis=0))
+print("StandDev. of Deviations:", np.std(data_num[:, 5:], axis=0))
 print("Mean TKA Deviations:", np.mean(data_num[data_full[:,1]==categories[0], 5:], axis=0))
 print("StandDev. of TKA Deviations:", np.std(data_num[data_full[:,1]==categories[0], 5:], axis=0))
 print("Mean PKA Deviations:", np.mean(data_num[data_full[:,1]==categories[1], 5:], axis=0))
@@ -45,6 +45,9 @@ print("EpiDev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 6], data_num
 print("WhiteDev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 7], data_num[data_full[:,1]==categories[1],7])[0, 1])
 print("PCADev:",np.corrcoef(data_num[data_full[:,1]==categories[0], 8], data_num[data_full[:,1]==categories[1],8])[0, 1])
 
+print("\nOVERALL")
+print("Overall Mean:", np.mean(data_num[:, 5:]))
+print("Overall STD:", np.std(data_num[:, 5:]))
 
 # variability in the repeated measurements made by same user
 # group by raters
@@ -88,16 +91,20 @@ PKA_indi_mean = (data_PKA1 + data_PKA2)/2
 complete_indi_mean = np.vstack([TKA_indi_mean, PKA_indi_mean])
 complete_abs_diff = np.vstack([TKA_diff, PKA_diff])
 ovr_mean = np.mean(complete_abs_diff)
+ovr_std = np.std(complete_abs_diff)
+print("Mean Difference in Absolute Deviation", ovr_mean)
 pl.scatter(TKA_indi_mean, TKA_diff, label="TKA", marker="x", color="black",alpha=0.5,s=20)
 pl.scatter(PKA_indi_mean, PKA_diff, label="PKA", marker="o", color="black",alpha=0.5,s=20)
 pl.plot([0, complete_indi_mean.max()], [ovr_mean, ovr_mean],'--', color="red")
+pl.plot([0, complete_indi_mean.max()], [ovr_mean+1.96*ovr_std, ovr_mean+1.96*ovr_std],'--', color="blue")
+pl.plot([0, complete_indi_mean.max()], [ovr_mean-1.96*ovr_std, ovr_mean-1.96*ovr_std],'--', color="blue")
 pl.xlabel("Average Absolute Deviation (˚)")
 pl.ylabel("Difference in Absolute Deviation (˚)")
 pl.legend()
 pl.show()
 
 # bar plot of reference deviation trends
-bar_xlabels = ["Overall Mean", "Overall STD", "TKA Mean", "TKA STD", "PKA Mean", "PKA STD"]
+bar_xlabels = ["Mean", "STD", "TKA Mean", "TKA STD", "PKA Mean", "PKA STD"]
 bar_labels = ["Whitesides-Epicondylar", "Epicondylar axis", "Whiteside line", "PCA"]
 c_labels = ["black", "green", "red", "blue"]
 
